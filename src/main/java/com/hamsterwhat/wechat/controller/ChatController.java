@@ -20,8 +20,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -68,7 +66,7 @@ public class ChatController extends BaseController {
         chatMessage.setContent(content);
         chatMessage.setContactorId(contactorId);
 
-        MessageDTO<? extends Serializable> messageDTO = null;
+        MessageDTO<? extends Serializable> messageDTO;
         switch (commandTypeEnum) {
             case CHAT_MESSAGE -> {
                 chatMessage.setStatus(MessageStatusEnum.SENT.getStatus());
@@ -84,9 +82,7 @@ public class ChatController extends BaseController {
                 chatMessage.setFileType(fileType);
                 messageDTO = this.chatMessageService.saveMessage(chatMessage, token);
             }
-            default -> {
-                throw new BusinessException(ResponseCodeEnum.CODE_600);
-            }
+            default -> throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
         return getSuccessResponse(messageDTO);
     }
@@ -123,8 +119,9 @@ public class ChatController extends BaseController {
                         .resolve(fileName);
             }
             case RELEASE_PACKAGE -> {
-                filePath = projectPath.resolve(SystemConstants.UPLOAD_RELEASE_FOLDER)
-                        .resolve(fileId + SystemConstants.RELEASE_FILE_EXTENSION);
+                String fileName = fileId + SystemConstants.RELEASE_FILE_EXTENSION;
+                        filePath = projectPath.resolve(SystemConstants.UPLOAD_RELEASE_FOLDER)
+                        .resolve(fileName);
             }
             case IMAGE -> {
                 Path imageFolder = projectPath.resolve(SystemConstants.UPLOAD_IMAGE_FOLDER);
@@ -141,9 +138,7 @@ public class ChatController extends BaseController {
                 filePath = this.chatMessageService.getMessageFilePath(
                         userId, Long.valueOf(fileId), fileFolder, showCover);
             }
-            default -> {
-                throw new BusinessException(ResponseCodeEnum.CODE_600);
-            }
+            default -> throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
 
         filePath = filePath.normalize();

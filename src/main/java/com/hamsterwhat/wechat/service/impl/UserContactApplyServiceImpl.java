@@ -81,11 +81,8 @@ public class UserContactApplyServiceImpl implements UserContactApplyService {
     @Override
     public void createRequest(String userId, String username, String contactorId, String applyMsg) {
         UserContactTypeEnum contactType = UserContactTypeEnum.getByPrefix(contactorId.substring(0, 1));
-        if (contactType == null) {
-            throw new BusinessException(ResponseCodeEnum.CODE_600);
-        }
 
-        // Check if the account which the user apply to blocked the user or not
+        // Check if the account which the user apply to be blocked the user or not
         UserContact userContact = this.userContactMapper.selectUserContactByPrimaryKeys(contactorId, userId);
         if (userContact != null && UserContactStatusEnum.BLOCKED.getStatus().equals(userContact.getStatus())) {
             throw new BusinessException("You have been blocked by this user!");

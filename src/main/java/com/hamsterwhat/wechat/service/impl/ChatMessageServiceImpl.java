@@ -85,7 +85,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     @Override
-    public MessageDTO<? extends Serializable> saveMessage(ChatMessage chatMessage, TokenUserInfoDTO token) {
+    public MessageDTO<Serializable> saveMessage(ChatMessage chatMessage, TokenUserInfoDTO token) {
         String sendUserId = token.getUserId();
         String contactorId = chatMessage.getContactorId();
         String contactKey = RedisConstants.USER_CONTACT_KEY + sendUserId;
@@ -139,7 +139,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         }
         this.chatSessionMapper.updateChatSession(chatSession);
 
-        MessageDTO<? extends Serializable> messageDTO = null;
+        MessageDTO<Serializable> messageDTO = null;
         if (isRobot) {
             // Prepare robot response
             SystemSettingsDTO settings = this.systemSettings.getSystemSettings();

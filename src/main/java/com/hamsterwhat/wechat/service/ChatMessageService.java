@@ -12,7 +12,7 @@ public interface ChatMessageService {
 
     ChatMessage getChatMessageById(Long messageId);
 
-    MessageDTO<? extends Serializable> saveMessage(ChatMessage chatMessage, TokenUserInfoDTO token);
+    MessageDTO<Serializable> saveMessage(ChatMessage chatMessage, TokenUserInfoDTO token);
 
     <T extends Serializable> void sendGroupNotificationMessage(
             String groupId, Short messageType, String content, T extendData);

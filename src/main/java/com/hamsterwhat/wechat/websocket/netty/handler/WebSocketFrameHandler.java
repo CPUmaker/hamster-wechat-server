@@ -81,7 +81,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof HandshakeComplete event) {
+        if (evt instanceof HandshakeComplete) {
             String userId = ctx.channel().attr(Attributes.AUTH_USER_ID).get();
             if (StringUtils.isEmpty(userId)) {
                 throw new BusinessException(ResponseCodeEnum.CODE_600);
