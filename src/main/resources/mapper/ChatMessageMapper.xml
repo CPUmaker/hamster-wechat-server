@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hamsterwhat.wechat.mapper.ChatMessageMapper">
+
+    <sql id="chatMessageColumns">
+        id, session_id, message_type, content, send_user_id, send_user_username, contactor_id, contact_type, file_size, file_name, file_type, status, send_time
+    </sql>
+
+    <sql id="baseConditionField">
+        <if test="query.id != null">
+            AND id = #{query.id}
+        </if>
+        <if test="query.sessionId != null">
+            AND session_id = #{query.sessionId}
+        </if>
+        <if test="query.messageType != null">
+            AND message_type = #{query.messageType}
+        </if>
+        <if test="query.content != null">
+            AND content = #{query.content}
+        </if>
+        <if test="query.sendUserId != null">
+            AND send_user_id = #{query.sendUserId}
+        </if>
+        <if test="query.sendUserUsername != null">
+            AND send_user_username = #{query.sendUserUsername}
+        </if>
+        <if test="query.contactorId != null">
+            AND contactor_id = #{query.contactorId}
+        </if>
+        <if test="query.contactType != null">
+            AND contact_type = #{query.contactType}
+        </if>
+        <if test="query.fileSize != null">
+            AND file_size = #{query.fileSize}
+        </if>
+        <if test="query.fileName != null">
+            AND file_name = #{query.fileName}
+        </if>
+        <if test="query.fileType != null">
+            AND file_type = #{query.fileType}
+        </if>
+        <if test="query.status != null">
+            AND status = #{query.status}
+        </if>
+        <if test="query.sendTime != null">
+            AND send_time = #{query.sendTime}
+        </if>
+    </sql>
+
+    <sql id="baseCondition">
+        <where>
+            <include refid="baseConditionField" />
+        </where>
+    </sql>
+
+    <sql id="queryCondition">
+        <where>
+            <include refid="baseConditionField" />
+            <if test="query.sendTimeStart != null">
+                AND last_login_time &gt;= #{query.sendTimeStart}
+            </if>
+            <if test="query.sendTimeEnd != null">
+                AND last_login_time &lt;= #{query.sendTimeEnd}
+            </if>
+            <if test="query.contactorIdIn != null">
+                AND contactor_id IN
+                <foreach collection="query.contactorIdIn" item="contactorId"
+                         open="(" separator="," close=")">
+                    #{contactorId}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectChatMessageById" resultType="ChatMessage">
+        select <include refid="chatMessageColumns" /> from chat_message where id = #{id};
+    </select>
+
+
+    <select id="selectChatMessageList" resultType="ChatMessage">
+        select <include refid="chatMessageColumns" /> from chat_message;
+    </select>
+
+    <select id="selectChatMessageListBySessionId" resultType="ChatMessage">
+        select <include refid="chatMessageColumns" /> from chat_message where session_id = #{sessionId};
+    </select>
+
+    <select
+            id="selectChatMessageListByQuery"
+            resultType="ChatMessage"
+            parameterType="com.hamsterwhat.wechat.entity.query.ChatMessageQuery"
+    >
+        select <include refid="chatMessageColumns" /> from chat_message <include refid="queryCondition" />
+        <if test="query.orderBy != null and query.orderDirection != null">
+            ORDER BY ${query.orderBy} ${query.orderDirection}
+        </if>
+        <if test="query.limit != null and query.offset != null">
+            LIMIT #{query.limit} OFFSET #{query.offset}
+        </if>
+    </select>
+
+    <select
+            id="selectChatMessageCountByQuery"
+            resultType="java.lang.Integer"
+            parameterType="com.hamsterwhat.wechat.entity.query.ChatMessageQuery"
+    >
+        select count(*) from chat_message <include refid="queryCondition" />;
+    </select>
+
+    <insert id="insertChatMessage" parameterType="ChatMessage">
+        INSERT INTO chat_message
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="sessionId != null">
+                session_id,
+            </if>
+            <if test="messageType != null">
+                message_type,
+            </if>
+            <if test="content != null">
+                content,
+            </if>
+            <if test="sendUserId != null">
+                send_user_id,
+            </if>
+            <if test="sendUserUsername != null">
+                send_user_username,
+            </if>
+            <if test="contactorId != null">
+                contactor_id,
+            </if>
+            <if test="contactType != null">
+                contact_type,
+            </if>
+            <if test="fileSize != null">
+                file_size,
+            </if>
+            <if test="fileName != null">
+                file_name,
+            </if>
+            <if test="fileType != null">
+                file_type,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="sendTime != null">
+                send_time,
+            </if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id},
+            </if>
+            <if test="sessionId != null">
+                #{sessionId},
+            </if>
+            <if test="messageType != null">
+                #{messageType},
+            </if>
+            <if test="content != null">
+                #{content},
+            </if>
+            <if test="sendUserId != null">
+                #{sendUserId},
+            </if>
+            <if test="sendUserUsername != null">
+                #{sendUserUsername},
+            </if>
+            <if test="contactorId != null">
+                #{contactorId},
+            </if>
+            <if test="contactType != null">
+                #{contactType},
+            </if>
+            <if test="fileSize != null">
+                #{fileSize},
+            </if>
+            <if test="fileName != null">
+                #{fileName},
+            </if>
+            <if test="fileType != null">
+                #{fileType},
+            </if>
+            <if test="status != null">
+                #{status},
+            </if>
+            <if test="sendTime != null">
+                #{sendTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateChatMessage" parameterType="ChatMessage">
+        update chat_message
+        <set>
+            <if test="sessionId != null">
+                session_id = #{sessionId},
+            </if>
+            <if test="messageType != null">
+                message_type = #{messageType},
+            </if>
+            <if test="content != null">
+                content = #{content},
+            </if>
+            <if test="sendUserId != null">
+                send_user_id = #{sendUserId},
+            </if>
+            <if test="sendUserUsername != null">
+                send_user_username = #{sendUserUsername},
+            </if>
+            <if test="contactorId != null">
+                contactor_id = #{contactorId},
+            </if>
+            <if test="contactType != null">
+                contact_type = #{contactType},
+            </if>
+            <if test="fileSize != null">
+                file_size = #{fileSize},
+            </if>
+            <if test="fileName != null">
+                file_name = #{fileName},
+            </if>
+            <if test="fileType != null">
+                file_type = #{fileType},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="sendTime != null">
+                send_time = #{sendTime},
+            </if>
+        </set>
+        <where>
+            <if test="id != null">
+                id = #{id}
+            </if>
+        </where>
+    </update>
+
+    <delete id="deleteChatMessageById">
+        DELETE FROM chat_message WHERE id = #{id};
+    </delete>
+
+    <delete id="deleteChatMessageBySessionId">
+        DELETE FROM chat_message WHERE session_id = #{sessionId};
+    </delete>
+
+    <delete id="deleteChatMessageByQuery" parameterType="com.hamsterwhat.wechat.entity.query.ChatMessageQuery">
+        DELETE FROM chat_message
+        <include refid="queryCondition" />
+    </delete>
+</mapper>

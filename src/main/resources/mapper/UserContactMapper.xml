@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hamsterwhat.wechat.mapper.UserContactMapper">
+
+    <resultMap id="detailedUserContact" type="UserContact">
+        <result property="userId" column="contact__user_id"/>
+        <result property="contactorId" column="contact__contactor_id"/>
+        <result property="contactType" column="contact__contact_type"/>
+        <result property="status" column="contact__status"/>
+        <result property="lastUpdateTime" column="contact__last_update_time"/>
+        <result property="createdAt" column="contact__created_at"/>
+        <association
+                property="user"
+                resultMap="foreignUserInfo"
+                columnPrefix="user__"
+        />
+        <association
+                property="userContactor"
+                resultMap="foreignUserInfo"
+                columnPrefix="user_contactor__"
+        />
+        <association
+                property="groupContactor"
+                resultMap="foreignGroupInfo"
+                columnPrefix="group_contactor__"
+        />
+    </resultMap>
+
+    <resultMap id="foreignUserInfo" type="UserInfo">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="email" column="email"/>
+        <result property="username" column="username"/>
+        <result property="gender" column="gender"/>
+        <result property="password" column="password"/>
+        <result property="bio" column="bio"/>
+        <result property="status" column="status"/>
+        <result property="geo" column="geo"/>
+        <result property="lastLoginTime" column="last_login_time"/>
+        <result property="lastOfflineTime" column="last_offline_time"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <resultMap id="foreignGroupInfo" type="GroupInfo">
+        <id property="id" column="id" />
+        <result property="groupId" column="group_id" />
+        <result property="groupOwnerId" column="group_owner_id" />
+        <result property="groupName" column="group_name" />
+        <result property="groupNotice" column="group_notice" />
+        <result property="status" column="status" />
+        <result property="createdAt" column="created_at" />
+    </resultMap>
+
+    <sql id="aliasField">
+        ${alias}.${field}
+    </sql>
+
+    <sql id="aliasFieldWithPrefix">
+        <include refid="aliasField" /> AS ${prefix}${field}
+    </sql>
+
+    <sql id="userContactColumns">
+        user_id, contactor_id, contact_type, status, last_update_time, created_at
+    </sql>
+
+    <sql id="userContactColumnsWithAlias">
+        <include refid="aliasFieldWithPrefix"><property name="field" value="user_id" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="contactor_id" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="contact_type" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="status" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="last_update_time" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="created_at" /></include>,
+    </sql>
+
+    <sql id="userInfoColumnsWithAliasAndPrefix">
+        <include refid="aliasFieldWithPrefix"><property name="field" value="id" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="user_id" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="email" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="username" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="gender" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="password" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="bio" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="status" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="geo" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="last_login_time" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="last_offline_time" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="created_at" /></include>,
+    </sql>
+
+    <sql id="groupInfoColumnsWithAliasAndPrefix">
+        <include refid="aliasFieldWithPrefix"><property name="field" value="id" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="group_id" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="group_owner_id" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="group_name" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="group_notice" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="status" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="created_at" /></include>,
+    </sql>
+
+    <sql id="baseConditionField">
+        <if test="query.userId != null">
+            AND user_id = #{query.userId}
+        </if>
+        <if test="query.contactorId != null">
+            AND contactor_id = #{query.contactorId}
+        </if>
+        <if test="query.contactType != null">
+            AND contact_type = #{query.contactType}
+        </if>
+        <if test="query.status != null">
+            AND status = #{query.status}
+        </if>
+        <if test="query.lastUpdateTime != null">
+            AND last_update_time = #{query.lastUpdateTime}
+        </if>
+        <if test="query.createdAt != null">
+            AND created_at = #{query.createdAt}
+        </if>
+    </sql>
+
+    <sql id="baseCondition">
+        <where>
+            <include refid="baseConditionField" />
+        </where>
+    </sql>
+
+    <sql id="queryCondition">
+        <where>
+            <include refid="baseConditionField" />
+            <if test="query.statusIn != null">
+                AND
+                <foreach collection="query.statusIn" item="item"
+                         open="status IN (" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.lastUpdateTimeStart != null">
+                AND last_update_time &gt;= #{query.lastUpdateTimeStart}
+            </if>
+            <if test="query.lastUpdateTimeEnd != null">
+                AND last_update_time &lt;= #{query.lastUpdateTimeEnd}
+            </if>
+        </where>
+    </sql>
+
+    <sql id="insertSqlStatement">
+
+    </sql>
+
+    <sql id="updateSqlStatement">
+
+    </sql>
+
+    <select id="selectUserContactByPrimaryKeys" resultType="UserContact">
+        SELECT <include refid="userContactColumns" /> FROM user_contact
+        WHERE user_id = #{userId} AND contactor_id = #{contactorId};
+    </select>
+
+    <select id="selectUserContactList" resultType="UserContact">
+        SELECT <include refid="userContactColumns" /> FROM user_contact;
+    </select>
+
+    <select id="selectUserContactListByUserId" resultType="UserContact">
+        SELECT <include refid="userContactColumns" /> FROM user_contact
+        WHERE user_id = #{userId};
+    </select>
+
+    <select id="selectUserContactListByContactorId" resultType="UserContact">
+        SELECT <include refid="userContactColumns" /> FROM user_contact
+        WHERE contactor_id = #{contactorId};
+    </select>
+
+    <select
+            id="selectUserContactListByQuery"
+            resultMap="detailedUserContact"
+            parameterType="com.hamsterwhat.wechat.entity.query.UserContactQuery"
+    >
+        SELECT
+        <trim suffixOverrides=",">
+            <include refid="userContactColumnsWithAlias">
+                <property name="alias" value="uc"/>
+                <property name="prefix" value="contact__"/>
+            </include>
+            <if test="query.includesUser != null">
+                <include refid="userInfoColumnsWithAliasAndPrefix">
+                    <property name="alias" value="ui"/>
+                    <property name="prefix" value="user__"/>
+                </include>
+            </if>
+            <if test="query.includesUserContactor != null">
+                <include refid="userInfoColumnsWithAliasAndPrefix">
+                    <property name="alias" value="ui_uc"/>
+                    <property name="prefix" value="user_contactor__"/>
+                </include>
+            </if>
+            <if test="query.includesGroupContactor != null">
+                <include refid="groupInfoColumnsWithAliasAndPrefix">
+                    <property name="alias" value="gi_gc"/>
+                    <property name="prefix" value="group_contactor__"/>
+                </include>
+            </if>
+        </trim>
+        FROM (
+            SELECT <include refid="userContactColumns" /> FROM user_contact
+            <include refid="queryCondition" />
+        ) uc
+        <if test="query.includesUser != null">
+            ${query.includesUser} JOIN user_info ui ON uc.user_id = ui.user_id
+        </if>
+        <if test="query.includesUserContactor != null">
+            ${query.includesUserContactor} JOIN user_info ui_uc ON uc.contactor_id = ui_uc.user_id
+        </if>
+        <if test="query.includesGroupContactor != null">
+            ${query.includesGroupContactor} JOIN group_info gi_gc ON uc.contactor_id = gi_gc.user_id
+        </if>
+        <if test="query.orderBy != null and query.orderDirection != null">
+            ORDER BY ${query.orderBy} ${query.orderDirection}
+        </if>
+        <if test="query.limit != null and query.offset != null">
+            LIMIT #{query.limit} OFFSET #{query.offset}
+        </if>
+    </select>
+
+    <select
+            id="selectUserContactCountByQuery"
+            resultType="java.lang.Integer"
+            parameterType="com.hamsterwhat.wechat.entity.query.UserContactQuery"
+    >
+        SELECT COUNT(*) FROM user_contact <include refid="queryCondition" />;
+    </select>
+
+    <insert id="insertUserContact" parameterType="UserContact">
+        INSERT INTO user_contact
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="contactorId != null">
+                contactor_id,
+            </if>
+            <if test="contactType != null">
+                contact_type,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="lastUpdateTime != null">
+                last_update_time,
+            </if>
+            <if test="createdAt != null">
+                created_at,
+            </if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                #{userId},
+            </if>
+            <if test="contactorId != null">
+                #{contactorId},
+            </if>
+            <if test="contactType != null">
+                #{contactType},
+            </if>
+            <if test="status != null">
+                #{status},
+            </if>
+            <if test="lastUpdateTime != null">
+                #{lastUpdateTime},
+            </if>
+            <if test="createdAt != null">
+                #{createdAt},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateUserContact" parameterType="UserContact">
+        UPDATE user_contact
+        <set>
+            <if test="contactType != null">
+                contact_type = #{contactType},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="lastUpdateTime != null">
+                last_update_time = #{lastUpdateTime},
+            </if>
+            <if test="createdAt != null">
+                created_at = #{createdAt},
+            </if>
+        </set>
+        WHERE user_id = #{userId} AND contactor_id = #{contactorId};
+    </update>
+
+    <update
+            id="updateUserContactByQuery"
+            parameterType="com.hamsterwhat.wechat.entity.query.UserContactQuery"
+    >
+        UPDATE user_contact
+        <set>
+            <if test="userContact.contactType != null">
+                contact_type = #{userContact.contactType},
+            </if>
+            <if test="userContact.status != null">
+                status = #{userContact.status},
+            </if>
+            <if test="userContact.lastUpdateTime != null">
+                last_update_time = #{userContact.lastUpdateTime},
+            </if>
+            <if test="userContact.createdAt != null">
+                created_at = #{userContact.createdAt},
+            </if>
+        </set>
+        <include refid="queryCondition" />;
+    </update>
+
+    <insert id="insertOrUpdateUserContact" parameterType="UserContact">
+        INSERT INTO user_contact
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="contactorId != null">
+                contactor_id,
+            </if>
+            <if test="contactType != null">
+                contact_type,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="lastUpdateTime != null">
+                last_update_time,
+            </if>
+            <if test="createdAt != null">
+                created_at,
+            </if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                #{userId},
+            </if>
+            <if test="contactorId != null">
+                #{contactorId},
+            </if>
+            <if test="contactType != null">
+                #{contactType},
+            </if>
+            <if test="status != null">
+                #{status},
+            </if>
+            <if test="lastUpdateTime != null">
+                #{lastUpdateTime},
+            </if>
+            <if test="createdAt != null">
+                #{createdAt},
+            </if>
+        </trim>
+        ON CONFLICT (user_id, contactor_id) DO UPDATE
+        <set>
+            <if test="contactType != null">
+                contact_type = #{contactType},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="lastUpdateTime != null">
+                last_update_time = #{lastUpdateTime},
+            </if>
+        </set>
+    </insert>
+
+    <delete id="deleteUserContactByPrimaryKeys">
+        DELETE FROM user_contact WHERE user_id = #{userId} AND contactor_id = #{contactorId};
+    </delete>
+
+    <delete id="deleteUserContactByQuery" parameterType="com.hamsterwhat.wechat.entity.query.UserContactQuery">
+        DELETE FROM user_contact
+        <include refid="queryCondition" />
+    </delete>
+</mapper>

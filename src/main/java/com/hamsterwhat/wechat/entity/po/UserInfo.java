@@ -1,0 +1,41 @@
+package com.hamsterwhat.wechat.entity.po;
+
+import lombok.Data;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import java.util.Date;
+
+@Data
+public class UserInfo {
+
+    private Long id;
+
+    private String userId;
+
+    private String email;
+
+    private String username;
+
+    private Short gender;
+
+    private String password;
+
+    private String bio;
+
+    private Short status;
+
+    private String geo;
+
+    private Boolean isAdmin;
+
+    private Date lastLoginTime;
+
+    private Date lastOfflineTime;
+
+    private Date createdAt;
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
+    }
+}

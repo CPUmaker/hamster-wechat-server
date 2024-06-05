@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hamsterwhat.wechat.mapper.AppVersionMapper">
+    <sql id="appVersionColumns">
+        id, version, description, status, file_type, backlink, created_at, array_agg(grayscale_uid) grayscaleUIDs
+    </sql>
+
+    <sql id="appVersionColumnsWithoutGrayscale">
+        id, version, description, status, file_type, backlink, created_at
+    </sql>
+
+    <sql id="baseConditionField">
+        <if test="query.id != null">
+            AND id = #{query.id}
+        </if>
+        <if test="query.version != null">
+            AND version = #{query.version}
+        </if>
+        <if test="query.description != null">
+            AND description = #{query.description}
+        </if>
+        <if test="query.status != null">
+            AND status = #{query.status}
+        </if>
+        <if test="query.fileType != null">
+            AND file_type = #{query.fileType}
+        </if>
+        <if test="query.backlink != null">
+            AND backlink = #{query.backlink}
+        </if>
+        <if test="query.createdAt != null">
+            AND created_at = #{query.createdAt}
+        </if>
+    </sql>
+
+    <sql id="baseCondition">
+        <where>
+            <include refid="baseConditionField" />
+        </where>
+    </sql>
+
+    <sql id="queryCondition">
+        <where>
+            <include refid="baseConditionField" />
+            <if test="query.idNotEqual != null">
+                AND id != #{query.idNotEqual}
+            </if>
+            <if test="query.createdAtStart != null">
+                AND created_at &gt;= #{query.createdAtStart}
+            </if>
+            <if test="query.createdAtEnd != null">
+                AND created_at &lt;= #{query.createdAtEnd}
+            </if>
+            <if test="query.versionGreaterThan != null">
+                AND string_to_array(version,'.')::int[] &gt; string_to_array(#{query.versionGreaterThan},'.')::int[]
+            </if>
+            <if test="query.versionLessThan != null">
+                AND string_to_array(version,'.')::int[] &lt; string_to_array(#{query.versionLessThan},'.')::int[]
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectAppVersionById" resultType="AppVersion">
+        SELECT <include refid="appVersionColumns" />
+        FROM app_version WHERE id = #{id}
+        LEFT JOIN app_grayscale ON id = app_version_id
+        GROUP BY id;
+    </select>
+
+    <select id="selectAppVersionByVersion" resultType="AppVersion">
+        SELECT <include refid="appVersionColumns" />
+        FROM app_version WHERE version = #{version}
+        LEFT JOIN app_grayscale ON id = app_version_id
+        GROUP BY id;
+    </select>
+
+    <select id="selectLatestUpdate" resultType="AppVersion">
+        SELECT <include refid="appVersionColumnsWithoutGrayscale" />
+        FROM app_version
+        WHERE string_to_array(version,'.')::int[] &gt; string_to_array(#{version},'.')::int[]
+        AND (
+            status = 2 OR (
+                status = 1 AND id IN (
+                    SELECT app_version_id FROM app_grayscale
+                    WHERE grayscale_uid = #{uid}
+                )
+            )
+        )
+        ORDER BY string_to_array(version,'.')::int[] DESC
+        LIMIT 1;
+    </select>
+
+    <select id="selectAppVersionList" resultType="AppVersion">
+        SELECT <include refid="appVersionColumns" /> FROM app_version
+        LEFT JOIN app_grayscale ON id = app_version_id
+        GROUP BY id;
+    </select>
+
+    <select
+            id="selectAppVersionListByQuery"
+            resultType="AppVersion"
+            parameterType="com.hamsterwhat.wechat.entity.query.AppVersionQuery"
+    >
+        select <include refid="appVersionColumns" /> from app_version
+        LEFT JOIN app_grayscale ON id = app_version_id GROUP BY id
+        <if test="query.grayscaleUID != null">
+            INNER JOIN (
+                SELECT app_version_id FROM app_grayscale
+                WHERE grayscale_uid = #{query.grayscaleUID}
+            ) ON app_version_id = id
+        </if>
+        <include refid="queryCondition" />
+        <if test="query.orderBy != null and query.orderDirection != null">
+            ORDER BY ${query.orderBy} ${query.orderDirection}
+        </if>
+        <if test="query.limit != null and query.offset != null">
+            LIMIT #{query.limit} OFFSET #{query.offset}
+        </if>
+    </select>
+
+    <select
+            id="selectAppVersionCountByQuery"
+            resultType="java.lang.Integer"
+            parameterType="com.hamsterwhat.wechat.entity.query.AppVersionQuery"
+    >
+        select count(*) from app_version <include refid="queryCondition" />
+        <if test="query.grayscaleUID != null">
+            INNER JOIN (
+            SELECT app_version_id FROM app_grayscale
+            WHERE grayscale_uid = #{query.grayscaleUID}
+            ) ON app_version_id = id
+        </if>
+    </select>
+
+    <insert id="insertAppVersion" parameterType="AppVersion">
+        INSERT INTO app_version
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="version != null">
+                version,
+            </if>
+            <if test="description != null">
+                description,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="fileType != null">
+                file_type,
+            </if>
+            <if test="backlink != null">
+                backlink,
+            </if>
+            <if test="createdAt != null">
+                created_at,
+            </if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id},
+            </if>
+            <if test="version != null">
+                #{version},
+            </if>
+            <if test="description != null">
+                #{description},
+            </if>
+            <if test="status != null">
+                #{status},
+            </if>
+            <if test="fileType != null">
+                #{fileType},
+            </if>
+            <if test="backlink != null">
+                #{backlink},
+            </if>
+            <if test="createdAt != null">
+                #{createdAt},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateAppVersion" parameterType="AppVersion">
+        update app_version
+        <set>
+            <if test="version != null">
+                version = #{version},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="fileType != null">
+                file_type = #{fileType},
+            </if>
+            <if test="backlink != null">
+                backlink = #{backlink},
+            </if>
+            <if test="createdAt != null">
+                created_at = #{createdAt},
+            </if>
+        </set>
+        WHERE id = #{id};
+    </update>
+
+    <delete id="deleteAppVersionById">
+        DELETE FROM app_version WHERE id = #{id};
+    </delete>
+</mapper>

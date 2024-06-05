@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hamsterwhat.wechat.mapper.UserContactApplyMapper">
+    <sql id="aliasField">
+        ${alias}.${field}
+    </sql>
+
+    <sql id="aliasFieldWithPrefix">
+        <include refid="aliasField" /> AS ${prefix}${field}
+    </sql>
+
+    <sql id="userContactApplyColumns">
+        id, apply_user_id, receive_user_id, contact_type, contact_id, status, apply_info, last_apply_time
+    </sql>
+
+    <sql id="userContactApplyColumnsWithAliasAndPrefix">
+        <include refid="aliasFieldWithPrefix"><property name="field" value="id" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="apply_user_id" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="receive_user_id" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="contact_type" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="contact_id" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="status" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="apply_info" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="last_apply_time" /></include>,
+    </sql>
+
+    <sql id="userInfoColumnsWithAliasAndPrefix">
+        <include refid="aliasFieldWithPrefix"><property name="field" value="id" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="user_id" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="email" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="username" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="gender" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="password" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="bio" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="status" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="geo" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="last_login_time" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="last_offline_time" /></include>,
+        <include refid="aliasFieldWithPrefix"><property name="field" value="created_at" /></include>,
+    </sql>
+
+    <sql id="baseConditionField">
+        <if test="query.id != null">
+            AND id = #{query.id}
+        </if>
+        <if test="query.applyUserId != null">
+            AND apply_user_id = #{query.applyUserId}
+        </if>
+        <if test="query.receiveUserId != null">
+            AND receive_user_id = #{query.receiveUserId}
+        </if>
+        <if test="query.contactType != null">
+            AND contact_type = #{query.contactType}
+        </if>
+        <if test="query.contactId != null">
+            AND contact_id = #{query.contactId}
+        </if>
+        <if test="query.status != null">
+            AND status = #{query.status}
+        </if>
+        <if test="query.applyInfo != null">
+            AND apply_info = #{query.applyInfo}
+        </if>
+        <if test="query.lastApplyTime != null">
+            AND last_apply_time = #{query.lastApplyTime}
+        </if>
+    </sql>
+
+    <sql id="baseCondition">
+        <where>
+            <include refid="baseConditionField" />
+        </where>
+    </sql>
+
+    <sql id="queryCondition">
+        <where>
+            <include refid="baseConditionField" />
+            <if test="query.lastApplyTimeStart != null">
+                AND last_apply_time &gt;= #{query.lastApplyTimeStart}
+            </if>
+            <if test="query.lastApplyTimeEnd != null">
+                AND last_apply_time &lt;= #{query.lastApplyTimeEnd}
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectUserContactApplyById" resultType="UserContactApply">
+        select <include refid="userContactApplyColumns" /> from user_contact_apply where id = #{id};
+    </select>
+
+    <select id="selectUserContactApplyByUniqueKeys" resultType="UserContactApply">
+        select <include refid="userContactApplyColumns" /> from user_contact_apply
+        where apply_user_id = #{applyUserId}
+            and receive_user_id = #{receiveUserId}
+            and contact_id = #{contactId};
+    </select>
+
+    <select id="selectUserContactApplyList" resultType="UserContactApply">
+        select <include refid="userContactApplyColumns" /> from user_contact_apply;
+    </select>
+
+    <select
+            id="selectUserContactApplyListByQuery"
+            resultType="UserContactApply"
+            parameterType="com.hamsterwhat.wechat.entity.query.UserContactApplyQuery"
+    >
+        select <include refid="userContactApplyColumns" /> from user_contact_apply <include refid="queryCondition" />
+        <if test="query.orderBy != null and query.orderDirection != null">
+            ORDER BY ${query.orderBy} ${query.orderDirection}
+        </if>
+        <if test="query.limit != null and query.offset != null">
+            LIMIT #{query.limit} OFFSET #{query.offset}
+        </if>
+    </select>
+
+    <select
+            id="selectUserContactApplyCountByQuery"
+            resultType="java.lang.Integer"
+            parameterType="com.hamsterwhat.wechat.entity.query.UserContactApplyQuery"
+    >
+        select count(*) from user_contact_apply <include refid="queryCondition" />;
+    </select>
+
+    <insert id="insertUserContactApply" parameterType="UserContactApply">
+        INSERT INTO user_contact_apply
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="applyUserId != null">
+                apply_user_id,
+            </if>
+            <if test="receiveUserId != null">
+                receive_user_id,
+            </if>
+            <if test="contactType != null">
+                contact_type,
+            </if>
+            <if test="contactId != null">
+                contact_id,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="applyInfo != null">
+                apply_info,
+            </if>
+            <if test="lastApplyTime != null">
+                last_apply_time,
+            </if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id},
+            </if>
+            <if test="applyUserId != null">
+                #{applyUserId},
+            </if>
+            <if test="receiveUserId != null">
+                #{receiveUserId},
+            </if>
+            <if test="contactType != null">
+                #{contactType},
+            </if>
+            <if test="contactId != null">
+                #{contactId},
+            </if>
+            <if test="status != null">
+                #{status},
+            </if>
+            <if test="applyInfo != null">
+                #{applyInfo},
+            </if>
+            <if test="lastApplyTime != null">
+                #{lastApplyTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateUserContactApply" parameterType="UserContactApply">
+        update user_contact_apply
+        <set>
+            <if test="id != null">
+                id = #{id},
+            </if>
+            <if test="applyUserId != null">
+                apply_user_id = #{applyUserId},
+            </if>
+            <if test="receiveUserId != null">
+                receive_user_id = #{receiveUserId},
+            </if>
+            <if test="contactType != null">
+                contact_type = #{contactType},
+            </if>
+            <if test="contactId != null">
+                contact_id = #{contactId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="applyInfo != null">
+                apply_info = #{applyInfo},
+            </if>
+            <if test="lastApplyTime != null">
+                last_apply_time = #{lastApplyTime},
+            </if>
+        </set>
+        where id = #{id};
+    </update>
+
+    <update id="updateUserContactApplyByQuery">
+        update user_contact_apply
+        <set>
+            <if test="apply.applyUserId != null">
+                apply_user_id = #{apply.applyUserId},
+            </if>
+            <if test="apply.receiveUserId != null">
+                receive_user_id = #{apply.receiveUserId},
+            </if>
+            <if test="apply.contactType != null">
+                contact_type = #{apply.contactType},
+            </if>
+            <if test="apply.contactId != null">
+                contact_id = #{apply.contactId},
+            </if>
+            <if test="apply.status != null">
+                status = #{apply.status},
+            </if>
+            <if test="apply.applyInfo != null">
+                apply_info = #{apply.applyInfo},
+            </if>
+            <if test="apply.lastApplyTime != null">
+                last_apply_time = #{apply.lastApplyTime},
+            </if>
+        </set>
+        <include refid="queryCondition" />;
+    </update>
+
+    <delete id="deleteUserContactApplyById">
+        DELETE FROM user_contact_apply WHERE id = #{id};
+    </delete>
+
+    <delete id="deleteUserContactApplyByIds">
+        <if test="ids != null and ids.size() != 0">
+            DELETE FROM user_contact_apply WHERE id IN
+            <foreach collection="ids" item="id" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+    </delete>
+
+    <delete id="deleteUserContactApplyByQuery" parameterType="com.hamsterwhat.wechat.entity.query.UserContactApplyQuery">
+        DELETE FROM user_contact_apply
+        <include refid="queryCondition" />
+    </delete>
+</mapper>

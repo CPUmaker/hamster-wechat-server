@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hamsterwhat.wechat.mapper.ChatSessionUserMapper">
+
+    <sql id="chatSessionUserColumns">
+        user_id, contactor_id, session_id, contactor_name,
+        last_message, last_receive_time
+    </sql>
+
+    <sql id="baseConditionField">
+        <if test="query.userId != null">
+            AND user_id = #{query.userId}
+        </if>
+        <if test="query.contactorId != null">
+            AND contactor_id = #{query.contactorId}
+        </if>
+        <if test="query.sessionId != null">
+            AND session_id = #{query.sessionId}
+        </if>
+        <if test="query.contactorName != null">
+            AND contactor_name = #{query.contactorName}
+        </if>
+    </sql>
+
+    <sql id="baseCondition">
+        <where>
+            <include refid="baseConditionField" />
+        </where>
+    </sql>
+
+    <sql id="queryCondition">
+        <where>
+            <include refid="baseConditionField" />
+        </where>
+    </sql>
+
+    <select id="selectChatSessionUserByPrimaryKeys" resultType="ChatSessionUser">
+        select <include refid="chatSessionUserColumns" /> from chat_session_user
+        where user_id = #{userId} AND contactor_id = #{contactorId}
+        inner join chat_session on id = session_id;
+    </select>
+
+    <select id="selectChatSessionUserBySessionId" resultType="ChatSessionUser">
+        select <include refid="chatSessionUserColumns" /> from chat_session_user
+        where session_id = #{sessionId}
+        inner join chat_session on id = session_id;
+    </select>
+
+    <select id="selectChatSessionUserList" resultType="ChatSessionUser">
+        select <include refid="chatSessionUserColumns" /> from chat_session_user
+        inner join chat_session on id = session_id;
+    </select>
+
+    <select id="selectChatSessionUserListByUserId" resultType="ChatSessionUser">
+        select <include refid="chatSessionUserColumns" /> from chat_session_user
+        where user_id = #{userId}
+        inner join chat_session on id = session_id;
+    </select>
+
+    <select
+            id="selectChatSessionUserListByQuery"
+            resultType="ChatSessionUser"
+            parameterType="com.hamsterwhat.wechat.entity.query.ChatSessionUserQuery"
+    >
+        select <include refid="chatSessionUserColumns" /> from chat_session_user <include refid="queryCondition" />
+        <if test="query.orderBy != null and query.orderDirection != null">
+            ORDER BY ${query.orderBy} ${query.orderDirection}
+        </if>
+        <if test="query.limit != null and query.offset != null">
+            LIMIT #{query.limit} OFFSET #{query.offset}
+        </if>
+        inner join chat_session on id = session_id;
+    </select>
+
+    <select
+            id="selectChatSessionUserCountByQuery"
+            resultType="java.lang.Integer"
+            parameterType="com.hamsterwhat.wechat.entity.query.ChatSessionUserQuery"
+    >
+        select count(*) from chat_session_user <include refid="queryCondition" />;
+    </select>
+
+    <insert id="insertChatSessionUser" parameterType="ChatSessionUser">
+        INSERT INTO chat_session_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="contactorId != null">
+                contactor_id,
+            </if>
+            <if test="sessionId != null">
+                session_id,
+            </if>
+            <if test="contactorName != null">
+                contactor_name,
+            </if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                #{userId},
+            </if>
+            <if test="contactorId != null">
+                #{contactorId},
+            </if>
+            <if test="sessionId != null">
+                #{sessionId},
+            </if>
+            <if test="contactorName != null">
+                #{contactorName},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateChatSessionUser" parameterType="ChatSessionUser">
+        update chat_session_user
+        <set>
+            <if test="sessionId != null">
+                session_id = #{sessionId},
+            </if>
+            <if test="contactorName != null">
+                contactor_name = #{contactorName},
+            </if>
+        </set>
+        <where>
+            <if test="userId != null">
+                user_id = #{userId}
+            </if>
+            <if test="contactorId != null">
+                contactor_id = #{id}
+            </if>
+        </where>
+    </update>
+
+    <update id="updateChatSessionUserByContactorId" parameterType="ChatSessionUser">
+        update chat_session_user
+        <set>
+            <if test="contactorName != null">
+                contactor_name = #{contactorName},
+            </if>
+        </set>
+        where contactor_id = #{id};
+    </update>
+
+    <insert id="insertOrUpdateChatSessionUser" parameterType="ChatSessionUser">
+        INSERT INTO chat_session_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="contactorId != null">
+                contactor_id,
+            </if>
+            <if test="sessionId != null">
+                session_id,
+            </if>
+            <if test="contactorName != null">
+                contactor_name,
+            </if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                #{userId},
+            </if>
+            <if test="contactorId != null">
+                #{contactorId},
+            </if>
+            <if test="sessionId != null">
+                #{sessionId},
+            </if>
+            <if test="contactorName != null">
+                #{contactorName},
+            </if>
+        </trim>
+        ON CONFLICT (user_id, contactor_id) DO UPDATE
+        <set>
+            <if test="sessionId != null">
+                session_id = #{sessionId},
+            </if>
+            <if test="contactorName != null">
+                contactor_name = #{contactorName},
+            </if>
+        </set>
+    </insert>
+
+    <delete id="deleteChatSessionUserByPrimaryKeys">
+        DELETE FROM chat_session_user WHERE id = #{id}
+        where user_id = #{userId} AND contactor_id = #{contactorId};
+    </delete>
+
+    <delete id="deleteChatSessionUserByQuery" parameterType="com.hamsterwhat.wechat.entity.query.ChatSessionUserQuery">
+        DELETE FROM chat_session_user
+        <include refid="queryCondition" />
+    </delete>
+</mapper>

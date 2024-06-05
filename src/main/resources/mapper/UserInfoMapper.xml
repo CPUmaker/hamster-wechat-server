@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hamsterwhat.wechat.mapper.UserInfoMapper">
+
+    <sql id="userInfoColumns">
+        id, email, username, gender, password, bio, status, geo, is_admin, last_login_time, last_offline_time, created_at, user_id
+    </sql>
+
+    <sql id="baseConditionField">
+        <if test="query.id != null">
+            AND id = #{query.id}
+        </if>
+        <if test="query.email != null">
+            AND email = #{query.email}
+        </if>
+        <if test="query.username != null">
+            AND username = #{query.username}
+        </if>
+        <if test="query.gender != null">
+            AND gender = #{query.gender}
+        </if>
+        <if test="query.password != null">
+            AND password = #{query.password}
+        </if>
+        <if test="query.bio != null">
+            AND bio = #{query.bio}
+        </if>
+        <if test="query.status != null">
+            AND status = #{query.status}
+        </if>
+        <if test="query.geo != null">
+            AND geo = #{query.geo}
+        </if>
+        <if test="query.isAdmin != null">
+            AND is_admin = #{query.isAdmin}
+        </if>
+        <if test="query.lastLoginTime != null">
+            AND last_login_time = #{query.lastLoginTime}
+        </if>
+        <if test="query.lastOfflineTime != null">
+            AND last_offline_time = #{query.lastOfflineTime}
+        </if>
+        <if test="query.createdAt != null">
+            AND created_at = #{query.createdAt}
+        </if>
+        <if test="query.userId != null">
+            AND user_id = #{query.userId}
+        </if>
+    </sql>
+
+    <sql id="baseCondition">
+        <where>
+            <include refid="baseConditionField" />
+        </where>
+    </sql>
+
+    <sql id="queryCondition">
+        <where>
+            <include refid="baseConditionField" />
+            <if test="query.usernameLike != null and query.usernameLike !=''">
+                AND username LIKE CONCAT('%', #{query.usernameLike},'%')
+            </if>
+            <if test="query.lastLoginTimeStart != null">
+                AND last_login_time &gt;= #{query.lastLoginTimeStart}
+            </if>
+            <if test="query.lastLoginTimeEnd != null">
+                AND last_login_time &lt;= #{query.lastLoginTimeEnd}
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectUserInfoById" resultType="UserInfo">
+        select <include refid="userInfoColumns" /> from user_info where id = #{id};
+    </select>
+
+    <select id="selectUserInfoByUserId" resultType="UserInfo">
+        select <include refid="userInfoColumns" /> from user_info where user_id = #{userId};
+    </select>
+
+    <select id="selectUserInfoByEmail" resultType="UserInfo">
+        select <include refid="userInfoColumns" /> from user_info where email = #{email};
+    </select>
+
+    <select id="selectUserInfoList" resultType="UserInfo">
+        select <include refid="userInfoColumns" /> from user_info;
+    </select>
+
+    <select
+            id="selectUserInfoListByQuery"
+            resultType="UserInfo"
+            parameterType="com.hamsterwhat.wechat.entity.query.UserInfoQuery"
+    >
+        select <include refid="userInfoColumns" /> from user_info <include refid="queryCondition" />
+        <if test="query.orderBy != null and query.orderDirection != null">
+            ORDER BY ${query.orderBy} ${query.orderDirection}
+        </if>
+        <if test="query.limit != null and query.offset != null">
+            LIMIT #{query.limit} OFFSET #{query.offset}
+        </if>
+    </select>
+
+    <select
+            id="selectUserInfoCountByQuery"
+            resultType="java.lang.Integer"
+            parameterType="com.hamsterwhat.wechat.entity.query.UserInfoQuery"
+    >
+        select count(*) from user_info <include refid="queryCondition" />;
+    </select>
+
+    <insert id="insertUserInfo" parameterType="UserInfo">
+        INSERT INTO user_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="email != null">
+                email,
+            </if>
+            <if test="username != null">
+                username,
+            </if>
+            <if test="gender != null">
+                gender,
+            </if>
+            <if test="password != null">
+                password,
+            </if>
+            <if test="bio != null">
+                bio,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="geo != null">
+                geo,
+            </if>
+            <if test="isAdmin != null">
+                is_admin,
+            </if>
+            <if test="lastLoginTime != null">
+                last_login_time,
+            </if>
+            <if test="lastOfflineTime != null">
+                last_offline_time,
+            </if>
+            <if test="createdAt != null">
+                created_at,
+            </if>
+            <if test="userId != null">
+                user_id,
+            </if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id},
+            </if>
+            <if test="email != null">
+                #{email},
+            </if>
+            <if test="username != null">
+                #{username},
+            </if>
+            <if test="gender != null">
+                #{gender},
+            </if>
+            <if test="password != null">
+                #{password},
+            </if>
+            <if test="bio != null">
+                #{bio},
+            </if>
+            <if test="status != null">
+                #{status},
+            </if>
+            <if test="geo != null">
+                #{geo},
+            </if>
+            <if test="isAdmin != null">
+                #{isAdmin},
+            </if>
+            <if test="lastLoginTime != null">
+                #{lastLoginTime},
+            </if>
+            <if test="lastOfflineTime != null">
+                #{lastOfflineTime},
+            </if>
+            <if test="createdAt != null">
+                #{createdAt},
+            </if>
+            <if test="userId != null">
+                #{userId},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateUserInfo" parameterType="UserInfo">
+        update user_info
+        <set>
+            <if test="email != null">
+                email = #{email},
+            </if>
+            <if test="username != null">
+                username = #{username},
+            </if>
+            <if test="gender != null">
+                gender = #{gender},
+            </if>
+            <if test="password != null">
+                password = #{password},
+            </if>
+            <if test="bio != null">
+                bio = #{bio},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="geo != null">
+                geo = #{geo},
+            </if>
+            <if test="isAdmin != null">
+                is_admin = #{isAdmin},
+            </if>
+            <if test="lastLoginTime != null">
+                last_login_time = #{lastLoginTime},
+            </if>
+            <if test="lastOfflineTime != null">
+                last_offline_time = #{lastOfflineTime},
+            </if>
+            <if test="createdAt != null">
+                created_at = #{createdAt},
+            </if>
+        </set>
+        <where>
+            <if test="id != null and userId == null">
+                id = #{id}
+            </if>
+            <if test="userId != null and id == null">
+                user_id = #{userId}
+            </if>
+        </where>
+    </update>
+
+    <delete id="deleteUserInfoById">
+        DELETE FROM user_info WHERE id = #{id};
+    </delete>
+
+    <delete id="deleteUserInfoByUserId">
+        DELETE FROM user_info WHERE user_id = #{userId};
+    </delete>
+
+    <delete id="deleteUserInfoByEmail">
+        DELETE FROM user_info WHERE email = #{email};
+    </delete>
+
+    <delete id="deleteUserInfoByIds">
+        <if test="ids != null and ids.size() != 0">
+            DELETE FROM user_info WHERE id IN
+            <foreach collection="ids" item="id" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+    </delete>
+
+    <delete id="deleteUserInfoByQuery" parameterType="com.hamsterwhat.wechat.entity.query.UserInfoQuery">
+        DELETE FROM user_info
+        <include refid="queryCondition" />
+    </delete>
+</mapper>

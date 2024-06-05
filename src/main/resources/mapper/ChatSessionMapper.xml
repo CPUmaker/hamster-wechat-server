@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hamsterwhat.wechat.mapper.ChatSessionMapper">
+
+    <sql id="chatSessionColumns">
+        id, last_message, last_receive_time
+    </sql>
+
+    <sql id="baseConditionField">
+        <if test="query.id != null">
+            AND id = #{query.id}
+        </if>
+        <if test="query.lastMessage != null">
+            AND last_message = #{query.lastMessage}
+        </if>
+        <if test="query.lastReceiveTime != null">
+            AND last_receive_time = #{query.lastReceiveTime}
+        </if>
+    </sql>
+
+    <sql id="baseCondition">
+        <where>
+            <include refid="baseConditionField" />
+        </where>
+    </sql>
+
+    <sql id="queryCondition">
+        <where>
+            <include refid="baseConditionField" />
+        </where>
+    </sql>
+
+    <select id="selectChatSessionById" resultType="ChatSession">
+        select <include refid="chatSessionColumns" /> from chat_session where id = #{id};
+    </select>
+
+    <select id="selectChatSessionList" resultType="ChatSession">
+        select <include refid="chatSessionColumns" /> from chat_session;
+    </select>
+
+    <select id="selectChatSessionListByIds" resultType="ChatSession">
+        select <include refid="chatSessionColumns" /> from chat_session
+        <where>
+            <foreach collection="ids" item="id" open="id IN (" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>;
+    </select>
+
+    <select
+            id="selectChatSessionListByQuery"
+            resultType="ChatSession"
+            parameterType="com.hamsterwhat.wechat.entity.query.ChatSessionQuery"
+    >
+        select <include refid="chatSessionColumns" /> from chat_session <include refid="queryCondition" />
+        <if test="query.orderBy != null and query.orderDirection != null">
+            ORDER BY ${query.orderBy} ${query.orderDirection}
+        </if>
+        <if test="query.limit != null and query.offset != null">
+            LIMIT #{query.limit} OFFSET #{query.offset}
+        </if>
+    </select>
+
+    <select
+            id="selectChatSessionCountByQuery"
+            resultType="java.lang.Integer"
+            parameterType="com.hamsterwhat.wechat.entity.query.ChatSessionQuery"
+    >
+        select count(*) from chat_session <include refid="queryCondition" />;
+    </select>
+
+    <insert id="insertChatSession" parameterType="ChatSession">
+        INSERT INTO chat_session
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="lastMessage != null">
+                last_message,
+            </if>
+            <if test="lastReceiveTime != null">
+                last_receive_time,
+            </if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id},
+            </if>
+            <if test="lastMessage != null">
+                #{lastMessage},
+            </if>
+            <if test="lastReceiveTime != null">
+                #{lastReceiveTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateChatSession" parameterType="ChatSession">
+        update chat_session
+        <set>
+            <if test="lastMessage != null">
+                last_message = #{lastMessage},
+            </if>
+            <if test="lastReceiveTime != null">
+                last_receive_time = #{lastReceiveTime},
+            </if>
+        </set>
+        <where>
+            <if test="id != null">
+                id = #{id}
+            </if>
+        </where>
+    </update>
+
+    <insert id="insertOrUpdateChatSession" parameterType="ChatSession">
+        INSERT INTO chat_session
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="lastMessage != null">
+                last_message,
+            </if>
+            <if test="lastReceiveTime != null">
+                last_receive_time,
+            </if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id},
+            </if>
+            <if test="lastMessage != null">
+                #{lastMessage},
+            </if>
+            <if test="lastReceiveTime != null">
+                #{lastReceiveTime},
+            </if>
+        </trim>
+        ON CONFLICT (id) DO UPDATE
+        <set>
+            <if test="lastMessage != null">
+                last_message = #{lastMessage},
+            </if>
+            <if test="lastReceiveTime != null">
+                last_receive_time = #{lastReceiveTime},
+            </if>
+        </set>
+    </insert>
+
+    <delete id="deleteChatSessionById">
+        DELETE FROM chat_session WHERE id = #{id};
+    </delete>
+</mapper>
