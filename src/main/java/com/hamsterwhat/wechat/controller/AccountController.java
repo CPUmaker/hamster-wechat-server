@@ -58,7 +58,6 @@ public class AccountController extends BaseController {
     ) {
         TokenUserInfoDTO token = TokenUserInfoHolder.getTokenUserInfo();
         this.userInfoService.resetPassword(token.getUserId(), originPassword, newPassword);
-        // TODO: enforce logout
         return getSuccessResponse(null);
     }
 

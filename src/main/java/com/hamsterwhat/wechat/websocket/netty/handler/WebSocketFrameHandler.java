@@ -2,9 +2,9 @@ package com.hamsterwhat.wechat.websocket.netty.handler;
 
 import com.hamsterwhat.wechat.entity.constants.RedisConstants;
 import com.hamsterwhat.wechat.entity.dto.MessageDTO;
-import com.hamsterwhat.wechat.entity.dto.TokenUserInfoDTO;
 import com.hamsterwhat.wechat.entity.dto.WsInitDTO;
 import com.hamsterwhat.wechat.entity.enums.CommandTypeEnum;
+import com.hamsterwhat.wechat.entity.enums.ResponseCodeEnum;
 import com.hamsterwhat.wechat.entity.enums.UserContactApplyStatusEnum;
 import com.hamsterwhat.wechat.entity.enums.UserContactTypeEnum;
 import com.hamsterwhat.wechat.entity.po.ChatMessage;
@@ -12,23 +12,22 @@ import com.hamsterwhat.wechat.entity.po.ChatSessionUser;
 import com.hamsterwhat.wechat.entity.po.UserInfo;
 import com.hamsterwhat.wechat.entity.query.ChatMessageQuery;
 import com.hamsterwhat.wechat.entity.query.UserContactApplyQuery;
+import com.hamsterwhat.wechat.exception.BusinessException;
 import com.hamsterwhat.wechat.mapper.ChatMessageMapper;
 import com.hamsterwhat.wechat.mapper.ChatSessionUserMapper;
 import com.hamsterwhat.wechat.mapper.UserContactApplyMapper;
 import com.hamsterwhat.wechat.mapper.UserInfoMapper;
 import com.hamsterwhat.wechat.utils.RedisUtils;
 import com.hamsterwhat.wechat.utils.StringUtils;
+import com.hamsterwhat.wechat.websocket.netty.attribute.Attributes;
 import com.hamsterwhat.wechat.websocket.netty.utils.SessionManager;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler.HandshakeComplete;
-import io.netty.util.AttributeKey;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,17 +37,12 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 @Component
 @Sharable
 public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
 
     private static final Logger logger = LoggerFactory.getLogger(WebSocketFrameHandler.class);
-
-    public static final AttributeKey<String> ATTR_AUTH_USER_ID = AttributeKey.valueOf("authUserId");
-
-    public static final AttributeKey<Boolean> ATTR_FORCE_OFFLINE = AttributeKey.valueOf("forceOffline");
 
     @Resource
     private UserInfoMapper userInfoMapper;
@@ -73,10 +67,9 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
      */
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame webSocketFrame) throws Exception {
-        if (webSocketFrame instanceof TextWebSocketFrame textWebSocketFrame) {
+        if (webSocketFrame instanceof TextWebSocketFrame) {
             Channel channel = ctx.channel();
-            String userId = channel.attr(ATTR_AUTH_USER_ID).get();
-            logger.info("received text frame at {}: {}", userId, textWebSocketFrame.text());
+            String userId = channel.attr(Attributes.AUTH_USER_ID).get();
             String heartbeatKey = RedisConstants.WS_USER_HEARTBEAT_KEY + userId;
             redisUtils.set(
                     heartbeatKey,
@@ -89,26 +82,10 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof HandshakeComplete event) {
-            // Check authentication
-            HttpHeaders headers = event.requestHeaders();
-            String token = headers.get(HttpHeaderNames.AUTHORIZATION);
-            if (token == null) {
-                ctx.close();
-                return;
+            String userId = ctx.channel().attr(Attributes.AUTH_USER_ID).get();
+            if (StringUtils.isEmpty(userId)) {
+                throw new BusinessException(ResponseCodeEnum.CODE_600);
             }
-
-            // Fetch user info from Redis
-            String tokenKey = RedisConstants.WS_TOKEN_KEY + token;
-            TokenUserInfoDTO tokenUserInfoDTO = (TokenUserInfoDTO) redisUtils.get(tokenKey);
-            if (tokenUserInfoDTO == null) {
-                ctx.close();
-                return;
-            }
-
-            // Add context
-            String userId = tokenUserInfoDTO.getUserId();
-            ctx.channel().attr(ATTR_AUTH_USER_ID).set(userId);
-            SessionManager.bindChannel(userId, ctx.channel());
 
             // Save heartbeat into Redis
             String heartbeatKey = RedisConstants.WS_USER_HEARTBEAT_KEY + userId;
@@ -188,7 +165,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         Channel channel = ctx.channel();
-        String userId = channel.attr(ATTR_AUTH_USER_ID).get();
+        String userId = channel.attr(Attributes.AUTH_USER_ID).get();
         if (!StringUtils.isEmpty(userId)) {
             // Unbind channel
             SessionManager.unBindChannel(userId);
@@ -196,7 +173,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             String heartbeatKey = RedisConstants.WS_USER_HEARTBEAT_KEY + userId;
             redisUtils.delete(heartbeatKey);
             // Delete Redis token when forcing offline
-            Boolean isForcedOffline = channel.attr(ATTR_FORCE_OFFLINE).get();
+            Boolean isForcedOffline = channel.attr(Attributes.FORCE_OFFLINE).get();
             if (isForcedOffline != null && isForcedOffline) {
                 String digestKey = RedisConstants.WS_TOKEN_DIGEST_KEY + userId;
                 String digest = (String) redisUtils.get(digestKey);

@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -153,7 +154,7 @@ public class UserContactServiceImpl implements UserContactService {
         // create session
         Date currentTime = new Date();
         String sessionId;
-        MessageDTO<Object> messageDTO = new MessageDTO<>();
+        MessageDTO<? extends Serializable> messageDTO = new MessageDTO<>();
         if (UserContactTypeEnum.USER.getType().equals(contactType)) {
             UserInfo applyUserInfo = this.userInfoMapper.selectUserInfoByUserId(applyUserId);
             UserInfo contactUserInfo = this.userInfoMapper.selectUserInfoByUserId(contactId);

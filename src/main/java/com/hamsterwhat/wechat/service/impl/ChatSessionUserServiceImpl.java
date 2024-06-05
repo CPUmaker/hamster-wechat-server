@@ -59,7 +59,7 @@ public class ChatSessionUserServiceImpl implements ChatSessionUserService {
             query.setStatus(UserContactStatusEnum.FRIEND.getStatus());
             this.userContactMapper
                     .selectUserContactListByQuery(query)
-                    .forEach((userContact) -> {
+                    .forEach(userContact -> {
                         MessageDTO<String> messageDTO = new MessageDTO<>();
                         messageDTO.setMessageType(CommandTypeEnum.CONTACT_INFO_UPDATE.getType());
                         messageDTO.setSendUserId(contactorId);

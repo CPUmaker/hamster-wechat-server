@@ -5,16 +5,17 @@ import com.hamsterwhat.wechat.entity.dto.TokenUserInfoDTO;
 import com.hamsterwhat.wechat.entity.po.ChatMessage;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
 import java.nio.file.Path;
 
 public interface ChatMessageService {
 
     ChatMessage getChatMessageById(Long messageId);
 
-    MessageDTO<Object> saveMessage(ChatMessage chatMessage, TokenUserInfoDTO token);
+    MessageDTO<? extends Serializable> saveMessage(ChatMessage chatMessage, TokenUserInfoDTO token);
 
-    void sendGroupNotificationMessage(
-            String groupId, Short messageType, String content, Object extendData);
+    <T extends Serializable> void sendGroupNotificationMessage(
+            String groupId, Short messageType, String content, T extendData);
 
     void uploadFile(String userId, Long messageId, MultipartFile file);
 

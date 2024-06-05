@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -235,7 +236,7 @@ public class GroupInfoServiceImpl implements GroupInfoService {
         SessionManager.bindChannelGroup(groupId, groupInfoQuery.getGroupOwnerId());
 
         // Create and send message
-        MessageDTO<Object> messageDTO = new MessageDTO<>();
+        MessageDTO<? extends Serializable> messageDTO = new MessageDTO<>();
         BeanUtils.copyProperties(chatMessage, messageDTO);
         messageDTO.setContactorName(groupInfo.getGroupName());
         this.messageHandler.sendMessage(messageDTO);

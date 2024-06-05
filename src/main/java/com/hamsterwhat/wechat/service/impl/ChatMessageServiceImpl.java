@@ -27,6 +27,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.Serializable;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -83,7 +85,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     @Override
-    public MessageDTO<Object> saveMessage(ChatMessage chatMessage, TokenUserInfoDTO token) {
+    public MessageDTO<? extends Serializable> saveMessage(ChatMessage chatMessage, TokenUserInfoDTO token) {
         String sendUserId = token.getUserId();
         String contactorId = chatMessage.getContactorId();
         String contactKey = RedisConstants.USER_CONTACT_KEY + sendUserId;
@@ -137,7 +139,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         }
         this.chatSessionMapper.updateChatSession(chatSession);
 
-        MessageDTO<Object> messageDTO = null;
+        MessageDTO<? extends Serializable> messageDTO = null;
         if (isRobot) {
             // Prepare robot response
             SystemSettingsDTO settings = this.systemSettings.getSystemSettings();
@@ -163,8 +165,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void sendGroupNotificationMessage(
-            String groupId, Short messageType, String content, Object extendData) {
+    public <T extends Serializable> void sendGroupNotificationMessage(
+            String groupId, Short messageType, String content, T extendData) {
         Date currentTime = new Date();
         String sessionId = StringUtils.getSessionId(groupId);
         GroupInfo groupInfo = this.groupInfoMapper.selectGroupInfoByGroupId(groupId);
@@ -191,7 +193,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         this.chatMessageMapper.insertChatMessage(chatMessage);
 
         // Create and send message
-        MessageDTO<Object> messageDTO = new MessageDTO<>();
+        MessageDTO<T> messageDTO = new MessageDTO<>();
         BeanUtils.copyProperties(chatMessage, messageDTO);
         messageDTO.setContactorName(groupInfo.getGroupName());
         messageDTO.setExtendData(extendData);
@@ -218,13 +220,13 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         if (isImage && !this.systemSettings.isExceedImageSizeLimit(file.getSize())) {
             path = this.appProperties.getProject().getFolder() +
-                    SystemConstants.UPLOAD_IMAGE_FOLDER + "/" + yearAndMonth;
+                    SystemConstants.UPLOAD_IMAGE_FOLDER + File.separator + yearAndMonth;
         } else if (isVideo && !this.systemSettings.isExceedVideoSizeLimit(file.getSize())) {
             path = this.appProperties.getProject().getFolder() +
-                    SystemConstants.UPLOAD_VIDEO_FOLDER + "/" + yearAndMonth;
+                    SystemConstants.UPLOAD_VIDEO_FOLDER + File.separator + yearAndMonth;
         } else if (!this.systemSettings.isExceedFileSizeLimit(file.getSize())) {
             path = this.appProperties.getProject().getFolder() +
-                    SystemConstants.UPLOAD_FILE_FOLDER + "/" + yearAndMonth;
+                    SystemConstants.UPLOAD_FILE_FOLDER + File.separator + yearAndMonth;
         } else {
             throw new BusinessException("The file size limit exceeded!");
         }

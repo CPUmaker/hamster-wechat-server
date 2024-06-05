@@ -6,12 +6,13 @@ import com.hamsterwhat.wechat.entity.enums.UserContactTypeEnum;
 import com.hamsterwhat.wechat.exception.BusinessException;
 import com.hamsterwhat.wechat.utils.JsonUtils;
 import com.hamsterwhat.wechat.utils.StringUtils;
-import com.hamsterwhat.wechat.websocket.netty.handler.WebSocketFrameHandler;
+import com.hamsterwhat.wechat.websocket.netty.attribute.Attributes;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import jdk.jfr.ContentType;
 import lombok.Getter;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,6 +23,10 @@ public class SessionManager {
     private static final ConcurrentMap<String, Channel> userChannelMap = new ConcurrentHashMap<>();
 
     private static final ConcurrentMap<String, ChannelGroup> groupChannelMap = new ConcurrentHashMap<>();
+
+    public static Channel getChannel(String userId) {
+        return userChannelMap.get(userId);
+    }
 
     public static void bindChannel(String userId, Channel channel) {
         userChannelMap.put(userId, channel);
@@ -42,11 +47,6 @@ public class SessionManager {
         channel.writeAndFlush(new TextWebSocketFrame(JsonUtils.toJson(message)));
     }
 
-    public static Channel getChannel(String userId) {
-
-        return userChannelMap.get(userId);
-    }
-
     public static void bindChannelGroup(String groupId, String userId) {
         if (StringUtils.isEmpty(groupId) || StringUtils.isEmpty(userId)) {
             throw new IllegalArgumentException("groupId and userId can't be null");
@@ -59,11 +59,11 @@ public class SessionManager {
     }
 
     public static void bindChannelGroup(String groupId, Channel channel) {
-        ChannelGroup channelGroup = groupChannelMap.get(groupId);
-        if (channelGroup == null) {
-            channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
-            groupChannelMap.put(groupId, channelGroup);
-        }
+        ChannelGroup channelGroup = groupChannelMap.computeIfAbsent(groupId, key -> {
+            ChannelGroup group = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+            groupChannelMap.put(groupId, group);
+            return group;
+        });
         channelGroup.add(channel);
     }
 
@@ -96,13 +96,10 @@ public class SessionManager {
 
     public static void sendMessage(MessageDTO<?> messageDTO) {
         UserContactTypeEnum contactTypeEnum = UserContactTypeEnum.getByType(messageDTO.getContactType());
-        switch (contactTypeEnum) {
-            case USER:
-                sendMessageToUser(messageDTO);
-                break;
-            case GROUP:
-                sendMessageToGroup(messageDTO);
-                break;
+        if (contactTypeEnum == UserContactTypeEnum.USER) {
+            sendMessageToUser(messageDTO);
+        } else if (contactTypeEnum == UserContactTypeEnum.GROUP) {
+            sendMessageToGroup(messageDTO);
         }
     }
 
@@ -118,7 +115,7 @@ public class SessionManager {
         if (CommandTypeEnum.FORCE_OFFLINE.getType().equals(messageDTO.getMessageType())) {
             Channel channel = userChannelMap.get(contactorId);
             if (channel != null) {
-                channel.attr(WebSocketFrameHandler.ATTR_FORCE_OFFLINE).set(Boolean.TRUE);
+                channel.attr(Attributes.FORCE_OFFLINE).set(Boolean.TRUE);
                 channel.close();
             }
         }
@@ -157,4 +154,6 @@ public class SessionManager {
             this.memberId = memberId;
         }
     }
+
+    private SessionManager() {}
 }

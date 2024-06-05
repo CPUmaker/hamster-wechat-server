@@ -125,10 +125,8 @@ public class AppVersionServiceImpl implements AppVersionService {
                 throw new BusinessException(ResponseCodeEnum.CODE_600);
             }
             this.uploadReleaseFile(appVersion, file);
-        } else if (fileTypeEnum == AppVersionFileTypeEnum.BACKLINK) {
-            if (appVersion.getBacklink() == null) {
-                throw new BusinessException(ResponseCodeEnum.CODE_600);
-            }
+        } else if (fileTypeEnum == AppVersionFileTypeEnum.BACKLINK && appVersion.getBacklink() == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
     }
 

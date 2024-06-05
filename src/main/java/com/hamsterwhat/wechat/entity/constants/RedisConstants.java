@@ -16,4 +16,6 @@ public class RedisConstants {
 
     public static final String USER_CONTACT_KEY = REDIS_KEY_PREFIX + "user:contact:";
     public static final Long USER_CONTACT_EXPIRE = 60 * 60 * 24 * 2L;
+
+    private RedisConstants() {}
 }

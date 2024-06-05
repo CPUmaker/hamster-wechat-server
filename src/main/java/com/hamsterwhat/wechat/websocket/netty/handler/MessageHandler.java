@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.io.Serializable;
+
 @Component
 public class MessageHandler {
 
@@ -36,7 +38,7 @@ public class MessageHandler {
     public void sendForceOfflineMessage(String contactorId) {
         UserContactTypeEnum contactType = UserContactTypeEnum.getByPrefix(contactorId.substring(0, 1));
         if (contactType == UserContactTypeEnum.USER) {
-            MessageDTO<Object> message = new MessageDTO<>();
+            MessageDTO<? extends Serializable> message = new MessageDTO<>();
             message.setMessageType(CommandTypeEnum.FORCE_OFFLINE.getType());
             message.setContactorId(contactorId);
             message.setContactType(contactType.getType());

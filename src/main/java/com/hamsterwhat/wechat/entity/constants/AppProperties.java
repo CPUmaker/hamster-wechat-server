@@ -1,6 +1,5 @@
 package com.hamsterwhat.wechat.entity.constants;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -19,14 +18,18 @@ public class AppProperties {
     @Setter
     @Getter
     public static class WebSocket {
+
         private Integer port;
 
         private String wsPath;
+
+        private Integer readerIdleTimeSeconds;
     }
 
     @Setter
     @Getter
     public static class Project {
+
         private String folder;
     }
 }

@@ -3,10 +3,15 @@ package com.hamsterwhat.wechat.entity.po;
 import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Date;
 
 @Data
-public class ChatSessionUser {
+public class ChatSessionUser implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 8649995957484331327L;
 
     private String userId;
 

@@ -1,6 +1,5 @@
 package com.hamsterwhat.wechat.entity.query;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

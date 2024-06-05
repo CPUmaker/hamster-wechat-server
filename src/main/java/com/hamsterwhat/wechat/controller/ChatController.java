@@ -29,14 +29,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/chat")
 public class ChatController extends BaseController {
-
-    private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
 
     private final ChatMessageService chatMessageService;
 
@@ -69,7 +68,7 @@ public class ChatController extends BaseController {
         chatMessage.setContent(content);
         chatMessage.setContactorId(contactorId);
 
-        MessageDTO<Object> messageDTO = null;
+        MessageDTO<? extends Serializable> messageDTO = null;
         switch (commandTypeEnum) {
             case CHAT_MESSAGE -> {
                 chatMessage.setStatus(MessageStatusEnum.SENT.getStatus());
@@ -119,7 +118,7 @@ public class ChatController extends BaseController {
         Path filePath;
         switch (fileTypeEnum) {
             case AVATAR -> {
-                String fileName = fileId + (showCover ? SystemConstants.COVER_SUFFIX : "");
+                String fileName = fileId + (Boolean.TRUE.equals(showCover) ? SystemConstants.COVER_SUFFIX : "");
                 filePath = projectPath.resolve(SystemConstants.UPLOAD_AVATAR_FOLDER)
                         .resolve(fileName);
             }

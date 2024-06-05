@@ -46,4 +46,6 @@ public class SystemConstants {
     public static final String DEFAULT_REMOVE_FROM_GROUP_MSG = "Admin has kicked %s off from the group!";
 
     public static final String PASSWORD_REGEX = "^[0-9a-zA-Z~!@#$%^&*_]{8,18}$";
+
+    private SystemConstants() {}
 }

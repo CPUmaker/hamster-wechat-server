@@ -52,4 +52,6 @@ public class UploadUtils {
             throw new BusinessException("Failed to upload file.");
         }
     }
+
+    private UploadUtils() {}
 }

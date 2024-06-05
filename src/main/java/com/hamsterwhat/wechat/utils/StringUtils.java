@@ -54,10 +54,10 @@ public class StringUtils {
 
     public static String cleanHtmlTag(String content) {
         content = content
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll("\r\n", "<br/>")
-                .replaceAll("\n", "<br/>");
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\r\n", "<br/>")
+                .replace("\n", "<br/>");
         return content;
     }
 
@@ -67,4 +67,6 @@ public class StringUtils {
         }
         return fileName.substring(fileName.lastIndexOf("."));
     }
+
+    private StringUtils() {}
 }

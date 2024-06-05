@@ -1,13 +1,12 @@
 package com.hamsterwhat.wechat.entity.dto;
 
-import com.hamsterwhat.wechat.entity.po.ChatMessage;
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
 
 @Data
-public class MessageDTO<T> implements Serializable {
+public class MessageDTO<T extends Serializable> implements Serializable {
     @Serial
     private static final long serialVersionUID = -3271028795517752567L;
 

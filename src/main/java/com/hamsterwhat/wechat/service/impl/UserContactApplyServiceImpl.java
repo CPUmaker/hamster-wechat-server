@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -139,7 +140,7 @@ public class UserContactApplyServiceImpl implements UserContactApplyService {
         if (applyRecord == null ||
                 !UserContactApplyStatusEnum.PENDING.getStatus().equals(applyRecord.getStatus())) {
             // send ws message
-            MessageDTO<Object> messageDTO = new MessageDTO<>();
+            MessageDTO<? extends Serializable> messageDTO = new MessageDTO<>();
             messageDTO.setMessageType(CommandTypeEnum.CONTACT_APPLY.getType());
             messageDTO.setContent(applyMsg);
             messageDTO.setContactorId(contactorId);

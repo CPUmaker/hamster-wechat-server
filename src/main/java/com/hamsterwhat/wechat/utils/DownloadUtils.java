@@ -18,6 +18,8 @@ public class DownloadUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(DownloadUtils.class);
 
+    private DownloadUtils() {}
+
     public static void downloadFile(Path filePath, HttpServletResponse response) {
         try {
             Resource resource = new UrlResource(filePath.toUri());

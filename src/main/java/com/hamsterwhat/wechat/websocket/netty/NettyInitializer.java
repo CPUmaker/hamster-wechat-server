@@ -1,7 +1,8 @@
 package com.hamsterwhat.wechat.websocket.netty;
 
 import com.hamsterwhat.wechat.entity.constants.AppProperties;
-import com.hamsterwhat.wechat.websocket.netty.handler.HeartbeatHandler;
+import com.hamsterwhat.wechat.websocket.netty.handler.AuthHandler;
+import com.hamsterwhat.wechat.websocket.netty.handler.WsIdleStateHandler;
 import com.hamsterwhat.wechat.websocket.netty.handler.WebSocketFrameHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -20,25 +21,28 @@ import java.util.concurrent.TimeUnit;
 public class NettyInitializer extends ChannelInitializer<SocketChannel> {
 
     @Resource
-    WebSocketFrameHandler webSocketFrameHandler;
+    private AuthHandler authHandler;
 
     @Resource
-    HeartbeatHandler heartbeatHandler;
+    private WebSocketFrameHandler webSocketFrameHandler;
 
     @Resource
-    AppProperties appProperties;
+    private AppProperties appProperties;
 
     @Override
     protected void initChannel(SocketChannel socketChannel) throws Exception {
         ChannelPipeline pipeline = socketChannel.pipeline();
+        // Add heartbeat
+        pipeline.addLast(new WsIdleStateHandler(
+                this.appProperties.getWebSocket().getReaderIdleTimeSeconds()
+        ));
         // Add support for http protocol
         pipeline.addLast(new HttpServerCodec());
         // Aggregate decoding from httpRequest/httpContent/lastHttpContent to fullHttpRequest
         pipeline.addLast(new HttpObjectAggregator(65536));
-        // Add heartbeat
-        pipeline.addLast(new IdleStateHandler(
-                60, 0, 0, TimeUnit.SECONDS));
-        pipeline.addLast(heartbeatHandler);
+
+        // CHeck Authentication before handshake
+        pipeline.addLast(authHandler);
         // Upgrade http to ws
         pipeline.addLast(new WebSocketServerCompressionHandler());
         pipeline.addLast(new WebSocketServerProtocolHandler(

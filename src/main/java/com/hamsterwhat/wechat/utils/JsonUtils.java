@@ -12,6 +12,8 @@ public class JsonUtils {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    private JsonUtils() {}
+
     /**
      * Convert an object to a JSON string
      * @param object the object to be converted to JSON

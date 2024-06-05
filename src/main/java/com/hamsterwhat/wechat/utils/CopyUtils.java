@@ -8,6 +8,7 @@ import java.util.List;
 
 public class CopyUtils {
 
+    private CopyUtils() {}
 
     public static <T, S> List<T> copyList(List<S> sourceList, Class<T> targetClass) {
         List<T> targetList = new ArrayList<>();

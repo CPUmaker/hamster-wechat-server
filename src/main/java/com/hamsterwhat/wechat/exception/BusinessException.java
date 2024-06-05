@@ -3,18 +3,26 @@ package com.hamsterwhat.wechat.exception;
 import com.hamsterwhat.wechat.entity.enums.ResponseCodeEnum;
 import lombok.Getter;
 
+import java.io.Serial;
+
 @Getter
 public class BusinessException extends RuntimeException {
 
-    private Integer code;
+    @Serial
+    private static final long serialVersionUID = 6869684797998566355L;
 
-    public BusinessException() {}
+    private final Integer code;
+
+    public BusinessException() {
+        this.code = 600;
+    }
 
     public BusinessException(String message) {
         super(message);
+        this.code = 600;
     }
 
-    public BusinessException(Integer code, String message) {
+    public BusinessException(final Integer code, String message) {
         super(message);
         this.code = code;
     }

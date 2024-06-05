@@ -46,7 +46,6 @@ public class GlobalOperationAspect {
                 }
             }
         } catch (BusinessException e) {
-            logger.error("Global Interceptor Error", e);
             throw e;
         } catch (Exception e) {
             logger.error("Global Interceptor Error", e);
@@ -81,7 +80,7 @@ public class GlobalOperationAspect {
 
     private void checkAdmin() {
         TokenUserInfoDTO tokenUserInfoDTO = TokenUserInfoHolder.getTokenUserInfo();
-        if (!tokenUserInfoDTO.getIsAdmin()) {
+        if (Boolean.FALSE.equals(tokenUserInfoDTO.getIsAdmin())) {
             throw new BusinessException(ResponseCodeEnum.CODE_901);
         }
     }
